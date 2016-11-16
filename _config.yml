@@ -60,5 +60,4 @@ gems:
   - jekyll-assets
   - jekyll-paginate
   - jekyll-sitemap
-  - jekyll-asset_path
 permalink: posts/:slug
