@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "C++ pthread库"
-description: "C++多线程pthread库学习笔记包括信号"
+title: "C++ pthread库及缓存"
+description: "C++多线程pthread库、信号量、缓存"
 og_image: "documentation/sample-image.jpg"
 tags: [C++, pthread]
 ---
@@ -402,13 +402,14 @@ private:
 
 #### 信号量比互斥量功能更强的原因
 
-1.它们能初始化为任何非负值；
-2.信号量没有“归属权”，任何线程都能够对锁上的信号量进行解锁；
+    1.它们能初始化为任何非负值；
+
+    2.信号量没有“归属权”，任何线程都能够对锁上的信号量进行解锁；
 
 
 #### 操作函数
 ```cpp
-头文件: #include <semaphore.h>
+#include <semaphore.h>
 sem_t // 信号量类型
 int sem_init(
     sem_t*      semaphore_p,    /* out */
@@ -500,7 +501,7 @@ void* Send_msg(void* rank) {
 路障和条件变量
 ----
 
-#### 路障
+#### 什么是路障？
 
 通过保证所有线程程序中处于同一位置来同步线程，这个同步点称为路障（barrier）,只有所有线程都到达此
 路障，线程才能继续运行下去，否则，会阻塞在路障。路障一个非常重要的应用就是调试程序，因为并行程序发
@@ -524,11 +525,11 @@ void* Thread_work(...) {
 ```
 此实现方式的缺点：
     
-    1.线程处于忙等待循环浪费很多cpu周期
+1.线程处于忙等待循环浪费很多cpu周期
     
-    2.程序中的线程数多过于核数时，程序的性能会直线下降
+2.程序中的线程数多过于核数时，程序的性能会直线下降
     
-    3.按此方式实现路障，有多少个路障就需要设置多少个不同的共享counter变量来进行计数
+3.按此方式实现路障，有多少个路障就需要设置多少个不同的共享counter变量来进行计数
 
 
 #### 信号量实现路障
@@ -557,11 +558,11 @@ void* Thread_work(...) {
 ```
 此方式实现路障的优缺点：
 
-    1.线程被sem_wait阻塞时，不会消耗cpu周期，性能更加
+1.线程被sem_wait阻塞时，不会消耗cpu周期，性能更加
     
-    2.counter被重置为0后可以重用
+2.counter被重置为0后可以重用
 
-    3.barrier_semaphore会导致竞争条件，不可重用
+3.barrier_semaphore会导致竞争条件，不可重用
 
 
 #### 条件变量
@@ -749,9 +750,9 @@ int main(int argc, char const *argv[])
 
 #### 缓存一致性的解决
 
-    1.写直达（write-through）Cache中，当cpu向Cache写数据的时，高速缓存会立即写回主存中；
+1.写直达（write-through）Cache中，当cpu向Cache写数据的时，高速缓存会立即写回主存中；
     
-    2.写回（write-back）Cache中，数据不是立即更新到主存中，而是将发生数据更新的高速缓存标记为脏(dirty)，当发生缓存行替换时，标记为脏的高速缓存行被写入到主存中；
+2.写回（write-back）Cache中，数据不是立即更新到主存中，而是将发生数据更新的高速缓存标记为脏(dirty)，当发生缓存行替换时，标记为脏的高速缓存行被写入到主存中；
 
 
 #### 伪共享(false sharing)
