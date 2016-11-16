@@ -3,7 +3,7 @@ layout: post
 title: "C++ pthread库"
 description: "C++多线程pthread库学习笔记包括信号"
 og_image: "documentation/sample-image.jpg"
-tags: [C++, STL]
+tags: [C++, pthread]
 ---
 
 Hello World多线程编译
