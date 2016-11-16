@@ -49,10 +49,8 @@ void* hello(void* rank) {
 }
 ```
 
-pthread函数
-----
+#### 线程启动和退出相关函数
 ```cpp
-pthread_t // 不透明的对象,存储的数据都是系统绑定,用户级无法直接访问里面数据
 pthread_create(
     pthread_t*              thread_p,                   /* out */
     const pthread_attr_t*   attr_p,                     /* in */
@@ -69,6 +67,7 @@ pthread_exit(
     void *ret_val_ptr  /* in */
 );
 ```
+pthread_t是一个不透明的对象,存储的数据都是系统绑定,用户级无法直接访问里面数据
 
 概念词语
 ----
@@ -97,8 +96,7 @@ pthread_exit(
 4. flag ++
 ```
 
-pthread计算矩阵乘法
-----
+#### 多线程并行计算矩阵乘法例子
 ```cpp
 #include <stdio.h>
 #include <stdlib.h>
@@ -170,6 +168,8 @@ void* Pth_mat_vect(void*rank) {
     return NULL;
 }
 ```
+可以自己编译运行查看结果
+
 
 互斥量
 ----
@@ -184,7 +184,7 @@ void* Pth_mat_vect(void*rank) {
 锁粒度的大小需要合适，太大对并发性没有什么提升，太小又会消耗太多的锁资源，需要在复杂性和性能之间找到平衡；
 
 
-#### 函数操作
+#### 相关操作函数
 ```cpp
 pthread_mutexattr_t // 特殊的类型变量，用来做互斥量
 int pthread_mutex_init(
@@ -196,8 +196,7 @@ int pthread_mutex_lock(pthread_mutext_t* mutex_p);
 int pthread_mutex_unlock(pthread_mutex_t* mutex_p);
 ```
 
-计算Pi的值例子
-----
+#### 互斥量实现多线程计算Pi的值例子
 ```cpp
 #include <stdio.h>
 #include <stdlib.h>
@@ -254,6 +253,8 @@ void* Thread_sum(void* rank) {
     return NULL;
 }
 ```
+（最好手动编译运行看一下）
+
 
 读写锁
 ----
@@ -287,8 +288,7 @@ int pthread_rwlock_tryrdlock(pthread_rwlock_t* rwlock);
 int pthread_rwlock_trywrlock(pthread_rwlock_t* rwlock);
 ```
 
-读写锁实现的作业队列
-----
+#### 读写锁实现的作业队列
 ```cpp
 #include <iostream>
 #include <queue>
@@ -389,6 +389,8 @@ private:
     pthread_rwlock_t q_lock;
 };
 ```
+（上面代码未实际编译运行）
+
 
 信号量(semaphore)
 ----
@@ -421,8 +423,7 @@ int sem_post(sem_t* semaphore_p     /* in/out */);
 int sem_wait(sem_t* semaphore_p     /* in/out */);
 ```
 
-信号量实现线程间发送消息
-----
+#### 信号量实现线程间发送消息
 ```cpp
 #include <stdio.h>
 #include <stdlib.h>
