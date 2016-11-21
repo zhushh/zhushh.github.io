@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Rick | c++ 时间相关函数</title>
+  <meta name="description" content="C++标准库的time.h头文件及linux的sys/time.h">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="c++ 时间相关函数">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/posts/c-%E6%97%B6%E9%97%B4%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0">
+  <meta property="og:description" content="C++标准库的time.h头文件及linux的sys/time.h">
+  <meta property="og:site_name" content="Rick">
+  <meta property="og:image" content="/assets/documentation/sample-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="/posts/c-%E6%97%B6%E9%97%B4%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0">
+  <meta name="twitter:title" content="c++ 时间相关函数">
+  <meta name="twitter:description" content="C++标准库的time.h头文件及linux的sys/time.h">
+  <meta name="twitter:image" content="/assets/documentation/sample-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="/feed.xml" type="application/rss+xml" rel="alternate" title="Rick Last 10 blog posts" />
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="Rick">Rick</a>
+  <ul class="header-links">
+    
+    
+    
+      <li>
+        <a href="https://github.com/zhushh" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:838044048@qq.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" target="_blank" title="RSS">
+          <span class="icon icon-social-rss"></span>
+        </a>
+      </li>
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>c++ 时间相关函数</h1>
+            <p>C++标准库的time.h头文件及linux的sys/time.h</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                September 13, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  4 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/C++">C++</a>
+                
+                  <a href="/tag/time">time</a>
+                
+                  <a href="/tag/ctime">ctime</a>
+                
+                  <a href="/tag/gettimeofday">gettimeofday</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <h2 id="types">Types</h2>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="kt">clock_t</span> <span class="c1">// Alias of a fundamental arithmetic type capable of representing clock tick counts, CLOCKS_PER_SEC
+</span>
+<span class="kt">time_t</span> <span class="c1">// Alias of a fundamental arithmetic type capable of representing times, as those returned by function time.
+</span>
+<span class="k">struct</span> <span class="n">tm</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">tm_sec</span><span class="p">;</span>     <span class="c1">// Seconds (0, 60)
+</span>    <span class="kt">int</span> <span class="n">tm_min</span><span class="p">;</span>     <span class="c1">// Minutes (0, 59)
+</span>    <span class="kt">int</span> <span class="n">tm_hour</span><span class="p">;</span>    <span class="c1">// Hours (0, 23)
+</span>    <span class="kt">int</span> <span class="n">tm_mday</span><span class="p">;</span>    <span class="c1">// Day of the month (1, 31)
+</span>    <span class="kt">int</span> <span class="n">tm_mon</span><span class="p">;</span>     <span class="c1">// Month (0, 11)
+</span>    <span class="kt">int</span> <span class="n">tm_year</span><span class="p">;</span>    <span class="c1">// Year - 1900
+</span>    <span class="kt">int</span> <span class="n">tm_wday</span><span class="p">;</span>    <span class="c1">// Day of the week (0-6, Sunday=0)
+</span>    <span class="kt">int</span> <span class="n">tm_yday</span><span class="p">;</span>    <span class="c1">// Day in the year (0-365, 1 Jan = 0)
+</span>    <span class="kt">int</span> <span class="n">tm_isdst</span><span class="p">;</span>   <span class="c1">// Daylight saving time
+</span><span class="p">};</span>
+</code></pre>
+</div>
+
+<h2 id="relative-function">Relative function</h2>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="kt">char</span><span class="o">*</span> <span class="n">asctime</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">tm</span> <span class="o">*</span><span class="n">tm</span><span class="p">);</span>
+<span class="kt">char</span><span class="o">*</span> <span class="n">ctime</span><span class="p">(</span><span class="k">const</span> <span class="kt">time_t</span> <span class="o">*</span><span class="n">timep</span><span class="p">);</span>
+
+<span class="k">struct</span> <span class="n">tm</span><span class="o">*</span> <span class="n">gmtime</span><span class="p">(</span><span class="k">const</span> <span class="kt">time_t</span> <span class="o">*</span><span class="n">timep</span><span class="p">);</span>
+<span class="k">struct</span> <span class="n">tm</span><span class="o">*</span> <span class="n">localtime</span><span class="p">(</span><span class="k">const</span> <span class="kt">time_t</span> <span class="o">*</span><span class="n">timep</span><span class="p">);</span>
+
+<span class="kt">time_t</span> <span class="n">mktime</span><span class="p">(</span><span class="k">struct</span> <span class="n">tm</span> <span class="o">*</span><span class="n">tm</span><span class="p">);</span>
+<span class="kt">time_t</span> <span class="n">time</span><span class="p">(</span><span class="kt">time_t</span> <span class="o">*</span><span class="n">timer</span><span class="p">);</span><span class="c1">// Get current calendar time as value of type time_t
+</span><span class="kt">clock_t</span> <span class="n">clock</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>    <span class="c1">// Return the processor time consumed by the program
+</span></code></pre>
+</div>
+
+<h2 id="examples">Examples</h2>
+<p>Print current localtime</p>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;time.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">time_t</span> <span class="n">rawtime</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">tm</span> <span class="o">*</span><span class="n">timeinfo</span><span class="p">;</span>
+    <span class="n">time</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rawtime</span><span class="p">);</span>     <span class="c1">// same as rawtime = time(NULL);
+</span>    <span class="n">timeinfo</span> <span class="o">=</span> <span class="n">localtime</span><span class="p">(</span><span class="n">rawtime</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Current time and date: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">asctime</span><span class="p">(</span><span class="n">timeinfo</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>Calculate program calculating time</p>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;time.h&gt;
+#include &lt;math.h&gt;
+</span>
+<span class="kt">int</span> <span class="n">frequency_of_primers</span><span class="p">(</span><span class="kt">int</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">f</span><span class="p">;</span>
+    <span class="kt">clock_t</span> <span class="n">t</span><span class="p">;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">clock</span><span class="p">();</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Calculating ...</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">frequency_of_primers</span><span class="p">(</span><span class="mi">99999</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"The number of primes lower than 100,000 is: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">f</span><span class="p">);</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">clock</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"It took me %d clicks(%f seconds).</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">t</span><span class="p">,((</span><span class="kt">float</span><span class="p">)</span><span class="n">t</span><span class="p">)</span><span class="o">/</span><span class="n">CLOCKS_PER_SEC</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">frequency_of_primers</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">freq</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">i</span><span class="p">);</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">;</span> <span class="n">j</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">%</span><span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="o">--</span><span class="n">freq</span><span class="p">;</span> <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">freq</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<h2 id="struct-timeval结构">struct timeval结构</h2>
+<p>include header and function</p>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;sys/time.h&gt;
+</span>
+<span class="k">struct</span> <span class="n">timeval</span> <span class="p">{</span>
+    <span class="n">__time_t</span> <span class="n">tv_sec</span><span class="p">;</span>        <span class="cm">/* seconds */</span>
+    <span class="n">__suseconds_t</span> <span class="n">tv_usec</span><span class="p">;</span>  <span class="cm">/* microseconds */</span>
+<span class="p">}</span>
+
+<span class="cm">/* Get the current time of day and timezone information,
+   putting it into *TV and *TZ.  If TZ is NULL, *TZ is not filled.
+   Returns 0 on success, -1 on errors.
+   NOTE: This form of timezone information is obsolete.
+   Use the functions and variables declared in &lt;time.h&gt; instead.  */</span>
+<span class="k">extern</span> <span class="kt">int</span> <span class="n">gettimeofday</span> <span class="p">(</span><span class="k">struct</span> <span class="n">timeval</span> <span class="o">*</span><span class="kr">__restrict</span> <span class="n">__tv</span><span class="p">,</span>
+             <span class="n">__timezone_ptr_t</span> <span class="n">__tz</span><span class="p">)</span> <span class="n">__THROW</span> <span class="n">__nonnull</span> <span class="p">((</span><span class="mi">1</span><span class="p">));</span>
+
+</code></pre>
+</div>
+
+<p>example</p>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="cp">#include &lt;cstdio&gt;
+#include &lt;cstdlib&gt;
+#include &lt;time.h&gt;
+#include &lt;sys/time.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">timeval</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">;</span>
+    <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">start</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">end</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="kt">long</span> <span class="kt">long</span> <span class="n">startusec</span><span class="p">,</span> <span class="n">endusec</span><span class="p">;</span>
+    <span class="n">startusec</span> <span class="o">=</span> <span class="n">start</span><span class="p">.</span><span class="n">tv_sec</span><span class="o">*</span><span class="mi">1000000</span> <span class="o">+</span> <span class="n">start</span><span class="p">.</span><span class="n">tv_usec</span><span class="p">;</span>
+    <span class="n">endusec</span> <span class="o">=</span> <span class="n">end</span><span class="p">.</span><span class="n">tv_sec</span><span class="o">*</span><span class="mi">1000000</span> <span class="o">+</span> <span class="n">end</span><span class="p">.</span><span class="n">tv_usec</span><span class="p">;</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Use time: "</span> <span class="o">&lt;&lt;</span> <span class="n">endusec</span> <span class="o">-</span> <span class="n">startusec</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=c++ 时间相关函数 - /posts/c-%E6%97%B6%E9%97%B4%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0 ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=/posts/c-%E6%97%B6%E9%97%B4%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=/posts/c-%E6%97%B6%E9%97%B4%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    Chalk is a high quality, completely customizable, performant and 100% free
+    blog template for Jekyll built by
+    <a href="/about" title="About me">Nielsen Ramon</a>. Download it <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">here</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

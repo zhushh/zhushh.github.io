@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Rick | Ubuntu14.04上搭建LEMP环境</title>
+  <meta name="description" content="ubuntu14.04系统上安装nginx、mysql、php并进行相关配置">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Ubuntu14.04上搭建LEMP环境">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/posts/ubuntu14-04%E6%90%AD%E5%BB%BAlemp%E7%8E%AF%E5%A2%83">
+  <meta property="og:description" content="ubuntu14.04系统上安装nginx、mysql、php并进行相关配置">
+  <meta property="og:site_name" content="Rick">
+  <meta property="og:image" content="/assets/documentation/sample-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="/posts/ubuntu14-04%E6%90%AD%E5%BB%BAlemp%E7%8E%AF%E5%A2%83">
+  <meta name="twitter:title" content="Ubuntu14.04上搭建LEMP环境">
+  <meta name="twitter:description" content="ubuntu14.04系统上安装nginx、mysql、php并进行相关配置">
+  <meta name="twitter:image" content="/assets/documentation/sample-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="/feed.xml" type="application/rss+xml" rel="alternate" title="Rick Last 10 blog posts" />
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="Rick">Rick</a>
+  <ul class="header-links">
+    
+    
+    
+      <li>
+        <a href="https://github.com/zhushh" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:838044048@qq.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" target="_blank" title="RSS">
+          <span class="icon icon-social-rss"></span>
+        </a>
+      </li>
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>Ubuntu14.04上搭建LEMP环境</h1>
+            <p>ubuntu14.04系统上安装nginx、mysql、php并进行相关配置</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                September 8, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  2 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/Lemp">Lemp</a>
+                
+                  <a href="/tag/mysql">mysql</a>
+                
+                  <a href="/tag/php">php</a>
+                
+                  <a href="/tag/nginx">nginx</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <h2 id="1安装mysql">1.安装Mysql</h2>
+
+<p>数据库安装：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  sudo apt-get update
+  sudo apt-get install mysql-server mysql-client
+</code></pre>
+</div>
+<p>终端输入下面命令安装配置数据库安全防护：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  mysql_secure_installation
+</code></pre>
+</div>
+
+<h2 id="2安装nginx">2.安装Nginx</h2>
+
+<p>如果已经安装了apache2，可以先删除在装nginx：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  sudo service apache2 stop
+  sudo apt-get purge apache2*
+  sudo apt-get autoremove apache2
+</code></pre>
+</div>
+
+<p>使用Nginx安装包安装：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  sudo apt-get update
+  sudo apt-get install nginx
+</code></pre>
+</div>
+<p>安装完成后可以访问http://localhost访问查看是否成功</p>
+
+<h2 id="3安装php">3.安装php</h2>
+
+<p>ubuntu上面可以安装php5：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  sudo apt-get update
+  sudo apt-get install php5 php5-fpm php5-mysql php5-cli php5-cgi php5-curl
+</code></pre>
+</div>
+
+<h2 id="4配置nginx">4.配置Nginx</h2>
+
+<p>使用下面命令打开配置文件/etc/nginx/nginx.conf：<code class="highlighter-rouge">sudo vim /etc/nginx/nginx.conf</code>（此处可选）使用lscpu查看cpu的信息，可以把worker_processes的值修改成lscpu显示的CPU(s)的值,保存后退出;</p>
+
+<p>查看nginx.conf文件的<code class="highlighter-rouge">http {}</code>里的信息，看默认的虚拟主机文件在哪里配置，一般有两种情况，如果是出现：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  include /etc/nginx/conf.d/*.conf;
+</code></pre>
+</div>
+<p>那么默认虚拟主机的配置信息就在/conf.d/目录下的以.conf后缀的文件定义；如果是出现下面这种：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  include /etc/nginx/site-available/*.conf;
+</code></pre>
+</div>
+<p>就说明是在/site-available目录下的.conf后缀文件定义，其他以此类推；
+假设默认的虚拟主机在/etc/nginx/conf.d/目录下配置，我们使用下面命令创建一个虚拟主机文件：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  sudo vim /etc/nginx/conf.d/example.conf
+</code></pre>
+</div>
+<p>然后复制下面这些配置信息：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>server {
+  listen 80;
+
+  root /usr/share/nginx/html;
+  index index.php index.html index.htm;
+  server_name example.localhost;
+
+  location / {
+     #try_files $uri $uri/ /index.html;
+     index index.php;
+     if (-f $request_filename) {
+         break;
+     }
+     rewrite ^/(.+)$ /index.php?url=$1 last;
+     break;
+  }
+
+  error_page 404 /404.html;
+
+  # redirect server error pages to the static page /50x.html
+  #
+  error_page 500 502 503 504 /50x.html;
+  location = /50x.html {
+  root /usr/share/nginx/html;
+  }
+
+  # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+  #
+  #location ~ \.php$ {
+  # proxy_pass http://127.0.0.1;
+  #}
+
+  # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+  #
+  location ~ \.php$ {
+  try_files $uri =404;
+  fastcgi_pass 127.0.0.1:9000;
+  fastcgi_index index.php;
+  fastcgi_param SCRIPT_FILENAME /scripts$fastcgi_script_name;
+  include fastcgi_params;
+  }
+}
+</code></pre>
+</div>
+
+<h2 id="5配置hosts-php-cgi-php-fpm以及让php-fpm使用tcp来链接">5.配置hosts, php-cgi, php-fpm以及让php-fpm使用TCP来链接</h2>
+
+<p>配置好nginx后，下面开始配置hosts，php-cgi和php-fpm</p>
+
+<p>(1).先打开/etc/hosts文件，配置上面nginx里的server_name，配置如下：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  127.0.0.1 example.localhost
+</code></pre>
+</div>
+<p>(2).之后，打开/etc/php5/fpm/php.ini文件，找到cgi.fix_pathinfo，并配置为下面：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  cgi.fix_pathinfo=0
+</code></pre>
+</div>
+<p>(3).再打开/etc/nginx/fastcgi_params文件，配置以下信息：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>  fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+</code></pre>
+</div>
+<p>(4).然后打开<code class="highlighter-rouge">/etc/php5/fpm/pool.d/www.conf</code>文件，其中有下面这行：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>listen = /var/run/php5-fpm.sock
+</code></pre>
+</div>
+<p>意思是让php-fpm使用socket链接，注释掉上面的listen，换成下面这个配置，使得php-fpm用TCP来链接：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>listen = 127.0.0.1:9000
+</code></pre>
+</div>
+
+<h2 id="6测试">6.测试</h2>
+
+<p>新建一个php文件/usr/share/nginx/html/info.php:</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>sudo vim /usr/share/nginx/html/info.php
+</code></pre>
+</div>
+<p>并输入下面内容：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>&lt;?php
+phpinfo();
+?&gt;
+</code></pre>
+</div>
+<p>在浏览器访问<a href="http://example.localhost/info.php">http://example.localhost/info.php</a>，就可以看到php的输出信息；</p>
+
+<h2 id="参考链接">参考链接</h2>
+
+<p>1.<a href="https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-on-ubuntu-14-04​">https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-on-ubuntu-14-04​</a></p>
+
+<p>2.<a href="http://www.linuxidc.com/Linux/2016-05/131154.htm​">http://www.linuxidc.com/Linux/2016-05/131154.htm​</a></p>
+
+<p>3.<a href="http://www.linuxidc.com/Linux/2016-05/131154.htm">http://www.linuxidc.com/Linux/2016-05/131154.htm</a></p>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=Ubuntu14.04上搭建LEMP环境 - /posts/ubuntu14-04%E6%90%AD%E5%BB%BAlemp%E7%8E%AF%E5%A2%83 ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=/posts/ubuntu14-04%E6%90%AD%E5%BB%BAlemp%E7%8E%AF%E5%A2%83', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=/posts/ubuntu14-04%E6%90%AD%E5%BB%BAlemp%E7%8E%AF%E5%A2%83', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    Chalk is a high quality, completely customizable, performant and 100% free
+    blog template for Jekyll built by
+    <a href="/about" title="About me">Nielsen Ramon</a>. Download it <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">here</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Rick | 对称加密和非对称加密</title>
+  <meta name="description" content="简单描述什么是对称加密及非对称加密">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="对称加密和非对称加密">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/posts/%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E5%92%8C%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86">
+  <meta property="og:description" content="简单描述什么是对称加密及非对称加密">
+  <meta property="og:site_name" content="Rick">
+  <meta property="og:image" content="/assets/documentation/sample-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="/posts/%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E5%92%8C%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86">
+  <meta name="twitter:title" content="对称加密和非对称加密">
+  <meta name="twitter:description" content="简单描述什么是对称加密及非对称加密">
+  <meta name="twitter:image" content="/assets/documentation/sample-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="/feed.xml" type="application/rss+xml" rel="alternate" title="Rick Last 10 blog posts" />
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="Rick">Rick</a>
+  <ul class="header-links">
+    
+    
+    
+      <li>
+        <a href="https://github.com/zhushh" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:838044048@qq.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" target="_blank" title="RSS">
+          <span class="icon icon-social-rss"></span>
+        </a>
+      </li>
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>对称加密和非对称加密</h1>
+            <p>简单描述什么是对称加密及非对称加密</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                November 6, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  1 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/网络安全">网络安全</a>
+                
+                  <a href="/tag/对称加密">对称加密</a>
+                
+                  <a href="/tag/非对称加密">非对称加密</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <h2 id="对称加密">对称加密</h2>
+
+<p>1.什么是对称加密</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>对称加密，又称私钥加密或共享密钥加密，算法在加密和解密的时候使用相同的密钥；
+因为密钥在网络上传输，所以安全性不高，容易被窃取等；
+</code></pre>
+</div>
+
+<p>2.对称加密的优缺点</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>优点：简单快捷，速度快
+缺点：密钥需要管理和分配
+</code></pre>
+</div>
+
+<p>3.对称加密常用算法</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>DES, 3DES, AES, IDEA, RC5, RC6
+</code></pre>
+</div>
+
+<h2 id="非对称加密">非对称加密</h2>
+
+<p>1.什么是非对称加密</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>非对称加密，又称公钥加密，算法需要两个密钥：公开密钥（public key）和私有密钥（private key）；
+公钥和私钥是一对，如果使用公钥加密数据，那么只有私钥可以解密；如果用私钥进行加密，就只有公钥能解密；
+</code></pre>
+</div>
+
+<p>2.非对称加密的基本过程</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>假设A和B两个用户发送消息；B的公钥为c，对应私钥（也属于B）为d，明文为x.
+    1. A用公钥对明文进行加密，形成密文c(x)，然后传输密文；
+    2. B收到密文，用私钥对密文进行解密d(c(x))，得到要通信的明文x;
+B向A发送信息反之
+</code></pre>
+</div>
+
+<p>3.非对称加密优缺点</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>优点：由于公钥是公开的，而私钥则由用户自己保存，所以对于非对称密钥，其保密管理相对比较简单
+缺点：因为复杂的加密算法，使的非对称密钥加密速度慢，成本高
+</code></pre>
+</div>
+
+<p>4.非对称加密常用算法</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>RSA(目前最常用), ECC(移动设备用), Diffie-Hellman, EIGamal, DSA(数字签名用)
+</code></pre>
+</div>
+
+<h2 id="总结">总结</h2>
+<div class="highlighter-rouge"><pre class="highlight"><code>1.对称加密在加密和解密使用相同的密钥，所以速度快，但由于需要在网络上面传播，所以不太安全；
+2.非对称加密使用公钥和私钥，其中一个公开，另一个私有，所以安全性高，但是加密和解密算法复杂，速度慢；
+3.解决办法：使用非对称加密对对称加密的密钥进行加密，然后发送出去，接收方使用私钥进行解密，得到对称加密的密钥，然后再使用对称加密进行通信；
+</code></pre>
+</div>
+
+<h2 id="参考链接">参考链接</h2>
+<p><a href="http://www.wikiwand.com/zh/%E5%85%AC%E5%BC%80%E5%AF%86%E9%92%A5%E5%8A%A0%E5%AF%86">公开密钥加密</a></p>
+
+<p><a href="http://www.wikiwand.com/zh/%E5%B0%8D%E7%A8%B1%E5%AF%86%E9%91%B0%E5%8A%A0%E5%AF%86">对称密钥加密</a></p>
+
+<p><a href="http://www.cnblogs.com/jfzhu/p/4020928.html">对称加密与非对称加密</a></p>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=对称加密和非对称加密 - /posts/%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E5%92%8C%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86 ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=/posts/%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E5%92%8C%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=/posts/%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E5%92%8C%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    Chalk is a high quality, completely customizable, performant and 100% free
+    blog template for Jekyll built by
+    <a href="/about" title="About me">Nielsen Ramon</a>. Download it <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">here</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Rick | STL Container</title>
+  <meta name="description" content="简单描述STL的容器">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="STL Container">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/posts/stl%E5%AE%B9%E5%99%A8">
+  <meta property="og:description" content="简单描述STL的容器">
+  <meta property="og:site_name" content="Rick">
+  <meta property="og:image" content="/assets/documentation/sample-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="/posts/stl%E5%AE%B9%E5%99%A8">
+  <meta name="twitter:title" content="STL Container">
+  <meta name="twitter:description" content="简单描述STL的容器">
+  <meta name="twitter:image" content="/assets/documentation/sample-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="/feed.xml" type="application/rss+xml" rel="alternate" title="Rick Last 10 blog posts" />
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="Rick">Rick</a>
+  <ul class="header-links">
+    
+    
+    
+      <li>
+        <a href="https://github.com/zhushh" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:838044048@qq.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" target="_blank" title="RSS">
+          <span class="icon icon-social-rss"></span>
+        </a>
+      </li>
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>STL Container</h1>
+            <p>简单描述STL的容器</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                November 16, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  1 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/C++">C++</a>
+                
+                  <a href="/tag/STL">STL</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <h2 id="array">array</h2>
+<ul>
+  <li>固定大小的序列容器，不能扩展存储空间</li>
+  <li>可当作元组(tuple)对象使用</li>
+</ul>
+
+<h2 id="bitset">bitset</h2>
+<ul>
+  <li>存储比特(bits)</li>
+  <li>每个比特位可以被单独访问</li>
+</ul>
+
+<h2 id="vector">vector</h2>
+<ul>
+  <li>连续的内存存储空间</li>
+  <li>序列容器</li>
+  <li>动态内存扩展（每次翻倍）</li>
+</ul>
+
+<h2 id="forward_list">forward_list</h2>
+<ul>
+  <li>序列容器</li>
+  <li>单向链表</li>
+</ul>
+
+<h2 id="list">list</h2>
+<ul>
+  <li>序列容器</li>
+  <li>双向链表</li>
+</ul>
+
+<h2 id="deque">deque</h2>
+<ul>
+  <li>双头队列</li>
+  <li>序列容器</li>
+  <li>非连续存储空间</li>
+</ul>
+
+<h2 id="stack">stack</h2>
+<ul>
+  <li>先进后出的容器适配器</li>
+  <li>默认是由deque实现</li>
+</ul>
+
+<h2 id="queue">queue</h2>
+<ul>
+  <li>先进先出的容器适配器</li>
+  <li>默认也是用deque实现</li>
+</ul>
+
+<h2 id="priority_queue">priority_queue</h2>
+<ul>
+  <li>具有优先级的队列</li>
+  <li>类似堆(heap)</li>
+  <li>默认使用vector实现</li>
+</ul>
+
+<h2 id="map">map</h2>
+<ul>
+  <li>用红黑树实现</li>
+  <li>键和值可以不同类型，键值不能重复</li>
+  <li>有序的关联容器</li>
+  <li>查询/插入/删除复杂度：O(logN)</li>
+  <li>存储自定义的数据结构（struct/class），需要实现比较操作（因为内部存储需要）</li>
+</ul>
+
+<h2 id="multimap">multimap</h2>
+<ul>
+  <li>二叉搜索树实现</li>
+  <li>有序的关联容器（根据键值排序）</li>
+  <li>键和值可以不同类型，键值可以重复</li>
+  <li>存储自定义的数据结构（struct/class），需要实现比较操作（因为内部存储需要）</li>
+</ul>
+
+<h2 id="unorder_map">unorder_map</h2>
+<ul>
+  <li>用哈希算法实现</li>
+  <li>键和值可以不同类型</li>
+  <li>无序的关联容器</li>
+  <li>查询/插入/删除复杂度：O(1)</li>
+  <li>存储自定义的数据结构（struct/class），需要实现可哈希操作（因为内部存储需要）</li>
+</ul>
+
+<h2 id="set">set</h2>
+<ul>
+  <li>红黑树实现</li>
+  <li>键和值相同，键值不能重复</li>
+  <li>有序的关联容器</li>
+  <li>查询/插入/删除复杂度：O(logN)</li>
+  <li>存储自定义的数据结构（struct/class），需要实现比较操作（因为内部存储需要）</li>
+</ul>
+
+<h2 id="unorder_set">unorder_set</h2>
+<ul>
+  <li>哈希算法实现</li>
+  <li>键和值相同，不可重复键值，哈希实现目的是为了加快查询速度</li>
+  <li>无序的关联容器</li>
+  <li>查询/插入/删除复杂度：O(1)</li>
+  <li>存储自定义的数据结构（struct/class），需要实现可哈希操作（因为内部存储需要）</li>
+</ul>
+
+<h2 id="备注">备注</h2>
+<p>The more complicated a data structure, the more likely that it’s not as widely useful as it might seem.</p>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=STL Container - /posts/stl%E5%AE%B9%E5%99%A8 ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=/posts/stl%E5%AE%B9%E5%99%A8', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=/posts/stl%E5%AE%B9%E5%99%A8', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    Chalk is a high quality, completely customizable, performant and 100% free
+    blog template for Jekyll built by
+    <a href="/about" title="About me">Nielsen Ramon</a>. Download it <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">here</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

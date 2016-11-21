@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Rick | C++ pthread库及缓存</title>
+  <meta name="description" content="C++多线程pthread库、信号量、缓存">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="C++ pthread库及缓存">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/posts/cplusplus-thread%E5%BA%93">
+  <meta property="og:description" content="C++多线程pthread库、信号量、缓存">
+  <meta property="og:site_name" content="Rick">
+  <meta property="og:image" content="/assets/documentation/sample-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="/posts/cplusplus-thread%E5%BA%93">
+  <meta name="twitter:title" content="C++ pthread库及缓存">
+  <meta name="twitter:description" content="C++多线程pthread库、信号量、缓存">
+  <meta name="twitter:image" content="/assets/documentation/sample-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="/feed.xml" type="application/rss+xml" rel="alternate" title="Rick Last 10 blog posts" />
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="Rick">Rick</a>
+  <ul class="header-links">
+    
+    
+    
+      <li>
+        <a href="https://github.com/zhushh" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:838044048@qq.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" target="_blank" title="RSS">
+          <span class="icon icon-social-rss"></span>
+        </a>
+      </li>
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>C++ pthread库及缓存</h1>
+            <p>C++多线程pthread库、信号量、缓存</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                November 5, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  18 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/C++">C++</a>
+                
+                  <a href="/tag/pthread">pthread</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <h2 id="hello-world多线程编译">Hello World多线程编译</h2>
+<h4 id="编译命令为">编译命令为：</h4>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>gcc pth_hello.c -o pth_hello -lpthread
+</code></pre>
+</div>
+
+<h4 id="pth_helloc文件如下">pth_hello.c文件如下：</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;pthread.h&gt;
+</span>
+<span class="kt">long</span> <span class="n">thread_count</span><span class="p">;</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="n">hello</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">thread_count</span> <span class="o">=</span> <span class="n">strtol</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+    <span class="kt">long</span> <span class="kr">thread</span><span class="p">;</span>
+    <span class="n">pthread_t</span> <span class="o">*</span><span class="n">thread_handlers</span><span class="p">;</span>
+    <span class="n">thread_handlers</span> <span class="o">=</span> <span class="p">(</span><span class="n">pthread_t</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">thread_count</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="n">pthread_t</span><span class="p">));</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">thread_handlers</span><span class="p">[</span><span class="kr">thread</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">hello</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="kr">thread</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Hello world from main.</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_join</span><span class="p">(</span><span class="n">thread_handlers</span><span class="p">[</span><span class="kr">thread</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">free</span><span class="p">(</span><span class="n">thread_handlers</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="nf">hello</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">rank</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">my_rank</span> <span class="o">=</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">rank</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Hello world from thread %ld.</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">my_rank</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<h4 id="线程启动和退出相关函数">线程启动和退出相关函数</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="n">pthread_create</span><span class="p">(</span>
+    <span class="n">pthread_t</span><span class="o">*</span>              <span class="n">thread_p</span><span class="p">,</span>                   <span class="cm">/* out */</span>
+    <span class="k">const</span> <span class="n">pthread_attr_t</span><span class="o">*</span>   <span class="n">attr_p</span><span class="p">,</span>                     <span class="cm">/* in */</span>
+    <span class="kt">void</span><span class="o">*</span>                   <span class="p">(</span><span class="o">*</span><span class="n">start_routine</span><span class="p">)(</span><span class="kt">void</span><span class="o">*</span><span class="p">),</span>    <span class="cm">/* in */</span>
+    <span class="kt">void</span><span class="o">*</span>                   <span class="n">arg_p</span>                       <span class="cm">/* in */</span>
+<span class="p">);</span>
+<span class="n">pthread_join</span><span class="p">(</span>
+    <span class="n">pthread_t</span>   <span class="kr">thread</span><span class="p">,</span>     <span class="cm">/* in */</span>
+    <span class="kt">void</span><span class="o">**</span>      <span class="n">ret_val_p</span>   <span class="cm">/* out */</span>
+<span class="p">);</span>
+
+<span class="c1">// use pthread_join(tid, &amp;ret_val_p) to get the ret_val_ptr value
+</span><span class="n">pthread_exit</span><span class="p">(</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">ret_val_ptr</span>  <span class="cm">/* in */</span>
+<span class="p">);</span>
+</code></pre>
+</div>
+<p>pthread_t是一个不透明的对象,存储的数据都是系统绑定,用户级无法直接访问里面数据</p>
+
+<h2 id="概念词语">概念词语</h2>
+
+<h4 id="竞争条件race-condition">竞争条件(race condition)</h4>
+
+<p>当多个线程要访问共享变量或共享文件时，如果至少有一个访问是更新操作，那么这些访问就可能会导致某种错
+误，这种情况就叫竞争条件。</p>
+
+<h4 id="临界区critical-section">临界区(critical section)</h4>
+
+<p>一段共享的代码段，每次只允许一个线程进入该代码段</p>
+
+<h4 id="忙等待">忙等待</h4>
+<div class="highlighter-rouge"><pre class="highlight"><code>1. y = Compute(my_rank);
+2. while (flag != my_rank);    // 此处一直检测flag值，处于忙等待状态
+3. x = x+y;
+4. flag++;
+忙等待有可能在编译器开启编译优化的时候可能会失效，比如上面进行编译优化后可能为：
+1. y = Compute(my_rank);
+2. x = x + y
+3. while (flag != my_rank);
+4. flag ++
+</code></pre>
+</div>
+
+<h4 id="多线程并行计算矩阵乘法例子">多线程并行计算矩阵乘法例子</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;pthread.h&gt;
+</span>
+<span class="kt">long</span> <span class="n">thread_count</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">;</span>
+<span class="kt">double</span> <span class="o">*</span><span class="n">x</span><span class="p">;</span>
+<span class="kt">double</span> <span class="o">*</span><span class="n">y</span><span class="p">;</span>
+<span class="kt">double</span> <span class="o">**</span><span class="n">A</span><span class="p">;</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="n">Pth_mat_vect</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">thread_count</span> <span class="o">=</span> <span class="n">strtol</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+    <span class="kt">long</span> <span class="kr">thread</span><span class="p">;</span>
+    <span class="n">pthread_t</span><span class="o">*</span> <span class="n">thread_handlers</span><span class="p">;</span>
+    <span class="n">thread_handlers</span> <span class="o">=</span> <span class="p">(</span><span class="n">pthread_t</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">thread_count</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="n">pthread_t</span><span class="p">));</span>
+    <span class="n">scanf</span><span class="p">(</span><span class="s">"%d %d"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">m</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">n</span><span class="p">);</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="kt">double</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="kt">double</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">m</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="kt">double</span><span class="o">**</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">m</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="o">*</span><span class="p">));</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kt">double</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+        <span class="c1">// 读取矩阵行元素
+</span>        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">scanf</span><span class="p">(</span><span class="s">"%lf"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// 读入向量x
+</span>    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">scanf</span><span class="p">(</span><span class="s">"%lf"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">thread_handlers</span><span class="p">[</span><span class="kr">thread</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">Pth_mat_vect</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="kr">thread</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_join</span><span class="p">(</span><span class="n">thread_handlers</span><span class="p">[</span><span class="kr">thread</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"The result:</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%lf</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+    <span class="p">}</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">thread_handlers</span><span class="p">);</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">y</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+    <span class="p">}</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="nf">Pth_mat_vect</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="n">rank</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">my_rank</span> <span class="o">=</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">rank</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">my_m</span> <span class="o">=</span> <span class="n">m</span> <span class="o">/</span> <span class="n">thread_count</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">my_first_row</span> <span class="o">=</span> <span class="n">my_m</span> <span class="o">*</span> <span class="n">my_rank</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">my_last_row</span> <span class="o">=</span> <span class="n">my_m</span> <span class="o">+</span> <span class="n">my_first_row</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">my_first_row</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">my_last_row</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>可以自己编译运行查看结果</p>
+
+<h2 id="互斥量">互斥量</h2>
+
+<h4 id="什么是互斥量">什么是互斥量？</h4>
+
+<p>互斥锁的简称，是一个特殊的变量，可以通过某些特殊类型的函数，互斥量可以用来限制每次只有一个线程能进入临界区。</p>
+
+<h4 id="锁的粒度">锁的粒度</h4>
+
+<p>指锁住的数据范围大小，比如锁住整个数组还是对每个数组的元素单独进行加锁；
+锁粒度的大小需要合适，太大对并发性没有什么提升，太小又会消耗太多的锁资源，需要在复杂性和性能之间找到平衡；</p>
+
+<h4 id="相关操作函数">相关操作函数</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="n">pthread_mutexattr_t</span> <span class="c1">// 特殊的类型变量，用来做互斥量
+</span><span class="kt">int</span> <span class="n">pthread_mutex_init</span><span class="p">(</span>
+    <span class="n">pthread_mutex_t</span><span class="o">*</span>            <span class="n">mutex_p</span><span class="p">,</span>    <span class="cm">/* out */</span>
+    <span class="k">const</span> <span class="n">pthread_mutexattr_t</span><span class="o">*</span>  <span class="n">attr_p</span>      <span class="cm">/* in */</span>
+<span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_mutex_destroy</span><span class="p">(</span><span class="n">pthread_mutex_t</span><span class="o">*</span> <span class="n">mutex_p</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="n">pthread_mutext_t</span><span class="o">*</span> <span class="n">mutex_p</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="n">pthread_mutex_t</span><span class="o">*</span> <span class="n">mutex_p</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<h4 id="互斥量实现多线程计算pi的值例子">互斥量实现多线程计算Pi的值例子</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;pthread.h&gt;
+</span>
+<span class="kt">long</span> <span class="n">thread_count</span><span class="p">;</span>
+<span class="n">pthread_mutex_t</span> <span class="n">mutex</span><span class="p">;</span>
+<span class="kt">long</span> <span class="kt">long</span> <span class="n">n</span><span class="p">;</span>
+<span class="kt">double</span> <span class="n">sum</span><span class="p">;</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="n">Thread_sum</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">thread_count</span> <span class="o">=</span> <span class="n">strtol</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">strtol</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+    <span class="kt">long</span> <span class="kr">thread</span><span class="p">;</span>
+    <span class="n">pthread_t</span><span class="o">*</span> <span class="n">thread_handlers</span><span class="p">;</span>
+    <span class="n">thread_handlers</span> <span class="o">=</span> <span class="p">(</span><span class="n">pthread_t</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">thread_count</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="n">pthread_t</span><span class="p">));</span>
+    <span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">thread_handlers</span><span class="p">[</span><span class="kr">thread</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">Thread_sum</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="kr">thread</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_join</span><span class="p">(</span><span class="n">thread_handlers</span><span class="p">[</span><span class="kr">thread</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Pi = %lf</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="mf">4.0</span><span class="o">*</span><span class="n">sum</span><span class="p">);</span>
+
+    <span class="n">pthread_mutex_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">thread_handlers</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="nf">Thread_sum</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">rank</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">my_rank</span> <span class="o">=</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">rank</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="kt">long</span> <span class="n">my_n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">/</span> <span class="n">thread_count</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="kt">long</span> <span class="n">my_first_i</span> <span class="o">=</span> <span class="n">my_n</span><span class="o">*</span><span class="n">my_rank</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="kt">long</span> <span class="n">my_last_i</span> <span class="o">=</span> <span class="n">my_first_i</span> <span class="o">+</span> <span class="n">my_n</span><span class="p">;</span>
+    <span class="kt">double</span> <span class="n">factor</span><span class="p">;</span>
+    <span class="kt">double</span> <span class="n">local_sum</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">my_first_i</span><span class="o">%</span><span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">long</span> <span class="kt">long</span> <span class="n">i</span> <span class="o">=</span> <span class="n">my_first_i</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">my_last_i</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">,</span> <span class="n">factor</span> <span class="o">=</span> <span class="o">-</span><span class="n">factor</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">local_sum</span> <span class="o">+=</span> <span class="n">factor</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+    <span class="n">sum</span> <span class="o">+=</span> <span class="n">local_sum</span><span class="p">;</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>（最好手动编译运行看一下）</p>
+
+<h2 id="读写锁">读写锁</h2>
+
+<h4 id="什么是读写锁">什么是读写锁？</h4>
+
+<p>与互斥量相似，但是允许更高的并发性。互斥锁要么是锁住状态，要么是不加锁状态，而且一次只有一个线程可以对其加锁。</p>
+
+<h4 id="读写锁有三种状态">读写锁有三种状态</h4>
+
+<p>读模式下的加锁状态，写模式下的加锁状态，不加锁状态；一次只有一个线程可以占有写模式的读写锁，但是可
+以有多个线程同时占用读模式的读写锁；</p>
+
+<h4 id="操作函数">操作函数</h4>
+<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="kt">int</span> <span class="n">pthread_rwlock_init</span><span class="p">(</span>
+    <span class="n">pthread_rwlock_t</span><span class="o">*</span> <span class="n">rwlock</span><span class="p">,</span>           <span class="cm">/* out */</span>
+    <span class="k">const</span> <span class="n">pthread_rwlockattr_t</span><span class="o">*</span> <span class="n">attr</span>    <span class="cm">/* in */</span>
+<span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_rwlock_destroy</span><span class="p">(</span>
+    <span class="n">pthread_rwlock_t</span><span class="o">*</span> <span class="n">rwlock</span>    <span class="cm">/* in */</span>
+<span class="p">);</span>
+
+<span class="c1">// 所有函数成功返回0，否则，返回错误编号
+</span><span class="kt">int</span> <span class="n">pthread_rwlock_rdlock</span><span class="p">(</span><span class="n">pthread_rwlock_t</span><span class="o">*</span> <span class="n">rwlock</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_rwlock_wrlock</span><span class="p">(</span><span class="n">pthread_rwlock_t</span><span class="o">*</span> <span class="n">rwlock</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="n">pthread_rwlock_t</span><span class="o">*</span> <span class="n">rwlock</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="n">pthread_rwlock_tryrdlock</span><span class="p">(</span><span class="n">pthread_rwlock_t</span><span class="o">*</span> <span class="n">rwlock</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_rwlock_trywrlock</span><span class="p">(</span><span class="n">pthread_rwlock_t</span><span class="o">*</span> <span class="n">rwlock</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<h4 id="读写锁实现的作业队列">读写锁实现的作业队列</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+#include &lt;queue&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="cp">#include &lt;cstdio&gt;
+#include &lt;cstdlib&gt;
+#include &lt;pthread.h&gt;
+</span>
+<span class="k">struct</span> <span class="n">Job</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">Job</span> <span class="o">*</span><span class="n">j_next</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">Job</span> <span class="o">*</span><span class="n">j_prev</span><span class="p">;</span>
+    <span class="n">pthread_t</span> <span class="n">j_id</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">JobQueue</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">JobQueue</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">q_head</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+        <span class="n">q_tail</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">err</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">err</span> <span class="o">=</span> <span class="n">pthread_rwlock_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q_lock</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">exit</span><span class="p">(</span><span class="n">err</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="o">~</span><span class="n">JobQueue</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="n">Job</span><span class="o">*</span> <span class="n">ptr</span> <span class="o">=</span> <span class="n">q_head</span><span class="p">;</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">q_head</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">q_head</span> <span class="o">=</span> <span class="n">q_head</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span>
+            <span class="k">delete</span> <span class="n">ptr</span><span class="p">;</span>
+            <span class="n">ptr</span> <span class="o">=</span> <span class="n">q_head</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">pthread_rwlock_destroy</span><span class="p">(</span><span class="n">q_lock</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">insert</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">Job</span><span class="o">*</span> <span class="n">job</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_rwlock_wrlock</span><span class="p">(</span><span class="n">q_lock</span><span class="p">);</span>
+        <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_next</span> <span class="o">=</span> <span class="n">q_head</span><span class="p">;</span>
+        <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_prev</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">q_head</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">q_tail</span> <span class="o">=</span> <span class="n">jp</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">q_head</span><span class="o">-&gt;</span><span class="n">j_prev</span> <span class="o">=</span> <span class="n">job</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">q_head</span> <span class="o">=</span> <span class="n">job</span><span class="p">;</span>
+        <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="n">q_lock</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">append</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">Job</span><span class="o">*</span> <span class="n">job</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_rwlock_wrlock</span><span class="p">(</span><span class="n">q_lock</span><span class="p">);</span>
+        <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_prev</span> <span class="o">=</span> <span class="n">q_tail</span><span class="p">;</span>
+        <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_next</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">q_tail</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">q_head</span> <span class="o">=</span> <span class="n">job</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">q_tail</span><span class="o">-&gt;</span><span class="n">j_next</span> <span class="o">=</span> <span class="n">job</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">q_tail</span> <span class="o">=</span> <span class="n">job</span><span class="p">;</span>
+        <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="n">q_lock</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">remove</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">Job</span><span class="o">*</span> <span class="n">job</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_rwlock_wrlock</span><span class="p">(</span><span class="n">q_lock</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">job</span> <span class="o">==</span> <span class="n">q_head</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">q_head</span> <span class="o">=</span> <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">q_tail</span> <span class="o">==</span> <span class="n">job</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">q_tail</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="o">-&gt;</span><span class="n">j_prev</span> <span class="o">=</span> <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">job</span> <span class="o">==</span> <span class="n">q_tail</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">q_tail</span> <span class="o">=</span> <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="p">;</span>
+            <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="o">-&gt;</span><span class="n">j_next</span> <span class="o">=</span> <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="o">-&gt;</span><span class="n">j_next</span> <span class="o">=</span> <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">;</span>
+            <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="o">-&gt;</span><span class="n">j_prev</span> <span class="o">=</span> <span class="n">job</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="n">q_lock</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">struct</span> <span class="n">Job</span><span class="o">*</span> <span class="n">find</span><span class="p">(</span><span class="n">pthread_t</span> <span class="n">id</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="n">Job</span> <span class="o">*</span><span class="n">jp</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">pthread_rwlock_rdlock</span><span class="p">(</span><span class="n">q_lock</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">jp</span> <span class="o">=</span> <span class="n">q_head</span><span class="p">;</span> <span class="n">jp</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">;</span> <span class="n">jp</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">pthreda_equal</span><span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span><span class="p">,</span> <span class="n">id</span><span class="p">))</span>
+                <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="n">q_lock</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">jp</span><span class="p">;</span>
+    <span class="p">}</span>
+
+<span class="k">private</span><span class="o">:</span>
+    <span class="k">struct</span> <span class="n">Job</span><span class="o">*</span> <span class="n">q_head</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">Job</span><span class="o">*</span> <span class="n">q_tail</span><span class="p">;</span>
+    <span class="n">pthread_rwlock_t</span> <span class="n">q_lock</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre>
+</div>
+<p>（上面代码未实际编译运行）</p>
+
+<h2 id="信号量semaphore">信号量(semaphore)</h2>
+
+<h4 id="信号量的概念">信号量的概念</h4>
+
+<p>一种特殊类型的unsigned int无符号整型变量，可以赋值为0,1,2,…
+它与互斥量最大的区别在于信号量没有个体拥有权，主线程把所有信号量初始化为0，即“加锁”，其他线程都能
+调用sem_post和sem_wait函数。</p>
+
+<h4 id="信号量比互斥量功能更强的原因">信号量比互斥量功能更强的原因</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>1.它们能初始化为任何非负值；
+
+2.信号量没有“归属权”，任何线程都能够对锁上的信号量进行解锁；
+</code></pre>
+</div>
+
+<h4 id="操作函数-1">操作函数</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;semaphore.h&gt;
+</span><span class="n">sem_t</span> <span class="c1">// 信号量类型
+</span><span class="kt">int</span> <span class="n">sem_init</span><span class="p">(</span>
+    <span class="n">sem_t</span><span class="o">*</span>      <span class="n">semaphore_p</span><span class="p">,</span>    <span class="cm">/* out */</span>
+    <span class="kt">int</span>         <span class="n">shared</span><span class="p">,</span>         <span class="cm">/* in */</span>
+    <span class="kt">unsigned</span>    <span class="n">initial_val</span>     <span class="cm">/* in */</span>
+<span class="p">);</span>
+<span class="kt">int</span> <span class="n">sem_destroy</span><span class="p">(</span><span class="n">sem_t</span><span class="o">*</span> <span class="n">semaphore_p</span>  <span class="cm">/* in/out */</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">sem_post</span><span class="p">(</span><span class="n">sem_t</span><span class="o">*</span> <span class="n">semaphore_p</span>     <span class="cm">/* in/out */</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">sem_wait</span><span class="p">(</span><span class="n">sem_t</span><span class="o">*</span> <span class="n">semaphore_p</span>     <span class="cm">/* in/out */</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<h4 id="信号量实现线程间发送消息">信号量实现线程间发送消息</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;semaphore.h&gt;
+</span>
+<span class="kt">void</span><span class="o">*</span> <span class="n">Send_msg</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">);</span>
+
+<span class="k">const</span> <span class="kt">int</span> <span class="n">MSG_MAX</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
+<span class="kt">long</span> <span class="n">thread_count</span><span class="p">;</span>
+<span class="kt">char</span> <span class="o">**</span><span class="n">message</span><span class="p">;</span>
+<span class="n">sem_t</span> <span class="o">*</span><span class="n">semaphores</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Usage: ./a.out thread_number</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="kt">long</span> <span class="kr">thread</span><span class="p">;</span>
+    <span class="n">thread_count</span> <span class="o">=</span> <span class="n">strtol</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+    <span class="n">pthread_t</span><span class="o">*</span> <span class="n">thread_handlers</span><span class="p">;</span>
+    <span class="n">thread_handlers</span> <span class="o">=</span> <span class="p">(</span><span class="n">pthread_t</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">thread_count</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="n">pthread_t</span><span class="p">));</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="o">**</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">thread_count</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">));</span>
+    <span class="n">semaphores</span> <span class="o">=</span> <span class="p">(</span><span class="n">sem_t</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">thread_count</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="n">sem_t</span><span class="p">));</span>
+
+    <span class="c1">// initialize message to NULL and semaphore to 0(locked)
+</span>    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">message</span><span class="p">[</span><span class="kr">thread</span><span class="p">]</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+        <span class="n">sem_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">semaphores</span><span class="p">[</span><span class="kr">thread</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// create thread
+</span>    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">thread_handlers</span><span class="p">[</span><span class="kr">thread</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">Send_msg</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="kr">thread</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// join thread
+</span>    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_join</span><span class="p">(</span><span class="n">thread_handlers</span><span class="p">[</span><span class="kr">thread</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// destroy semaphore
+</span>    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">sem_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">semaphores</span><span class="p">[</span><span class="kr">thread</span><span class="p">]);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// free memory
+</span>    <span class="n">free</span><span class="p">(</span><span class="n">semaphores</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kr">thread</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kr">thread</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">;</span> <span class="kr">thread</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="kr">thread</span><span class="p">]);</span>
+    <span class="p">}</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
+    <span class="n">free</span><span class="p">(</span><span class="n">thread_handlers</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="nf">Send_msg</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">rank</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">my_rank</span> <span class="o">=</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">rank</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">dest</span> <span class="o">=</span> <span class="p">(</span><span class="n">my_rank</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">thread_count</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">my_msg</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">MSG_MAX</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">));</span>
+
+    <span class="n">sprintf</span><span class="p">(</span><span class="n">my_msg</span><span class="p">,</span> <span class="s">"Hello to %ld from %ld"</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">my_rank</span><span class="p">);</span>
+    <span class="n">message</span><span class="p">[</span><span class="n">dest</span><span class="p">]</span> <span class="o">=</span> <span class="n">my_msg</span><span class="p">;</span>
+    <span class="n">sem_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">semaphores</span><span class="p">[</span><span class="n">dest</span><span class="p">]);</span>    <span class="c1">// unlock semaphores of dest
+</span>    <span class="n">sem_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">semaphores</span><span class="p">[</span><span class="n">my_rank</span><span class="p">]);</span> <span class="c1">// wait for semaphores to be unlocked
+</span>    <span class="n">printf</span><span class="p">(</span><span class="s">"Thread %ld &gt; %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">my_rank</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="n">my_rank</span><span class="p">]);</span>
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<h2 id="生产者与消费者同步">生产者与消费者同步</h2>
+<p>一个“消费者”线程在继续运行前需要等待一些条件或数据被“生产者”线程创建。</p>
+
+<h2 id="路障和条件变量">路障和条件变量</h2>
+
+<h4 id="什么是路障">什么是路障？</h4>
+
+<p>通过保证所有线程程序中处于同一位置来同步线程，这个同步点称为路障（barrier）,只有所有线程都到达此
+路障，线程才能继续运行下去，否则，会阻塞在路障。路障一个非常重要的应用就是调试程序，因为并行程序发
+生错误时，很难确定具体在哪个位置出现错误。</p>
+
+<h4 id="忙等待和互斥量实现的路障">忙等待和互斥量实现的路障</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="kt">int</span> <span class="n">counter</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">thread_count</span><span class="p">;</span>
+<span class="n">pthread_mutex_t</span> <span class="n">barrier_mutex</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="kt">void</span><span class="o">*</span> <span class="n">Thread_work</span><span class="p">(...)</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">barrier_mutex</span><span class="p">);</span>
+    <span class="n">counter</span><span class="o">++</span><span class="p">;</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">barrier_mutex</span><span class="p">);</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">counter</span> <span class="o">&lt;</span> <span class="n">thread_count</span><span class="p">);</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>此实现方式的缺点：</p>
+
+<p>1.线程处于忙等待循环浪费很多cpu周期</p>
+
+<p>2.程序中的线程数多过于核数时，程序的性能会直线下降</p>
+
+<p>3.按此方式实现路障，有多少个路障就需要设置多少个不同的共享counter变量来进行计数</p>
+
+<h4 id="信号量实现路障">信号量实现路障</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="kt">int</span> <span class="n">counter</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">thread_count</span><span class="p">;</span>
+<span class="n">sem_t</span> <span class="n">counter_semaphore</span><span class="p">;</span>
+<span class="n">sem_t</span> <span class="n">barrier_semaphore</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="kt">void</span><span class="o">*</span> <span class="n">Thread_work</span><span class="p">(...)</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="n">sem_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">counter_semphore</span><span class="p">);</span>    <span class="c1">// 线程请求counter_semaphore
+</span>    <span class="k">if</span> <span class="p">(</span><span class="n">counter</span> <span class="o">==</span> <span class="n">thread_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// 判断是否为最后一个线程
+</span>        <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>    <span class="c1">// 重置counter计数
+</span>        <span class="n">sem_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">counter_semaphore</span><span class="p">);</span>   <span class="c1">// 释放counter_semaphore
+</span>        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">thread_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">sem_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">barrier_semaphore</span><span class="p">);</span>   <span class="c1">// 逐一释放barrier_semaphore，使其他线程可以继续前行
+</span>        <span class="p">}</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">counter</span><span class="o">++</span><span class="p">;</span>
+        <span class="n">sem_post</span><span class="p">(</span><span class="o">&amp;</span><span class="n">counter_semaphore</span><span class="p">);</span>   <span class="c1">// 线程释放counter_semaphore
+</span>        <span class="n">sem_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">barrier_semaphore</span><span class="p">);</span>   <span class="c1">// 线程进入阻塞
+</span>    <span class="p">}</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>此方式实现路障的优缺点：</p>
+
+<p>1.线程被sem_wait阻塞时，不会消耗cpu周期，性能更加</p>
+
+<p>2.counter被重置为0后可以重用</p>
+
+<p>3.barrier_semaphore会导致竞争条件，不可重用</p>
+
+<h4 id="条件变量">条件变量</h4>
+
+<p>条件变量是一个数据结构，允许线程在某个特定条件或事件发生前都处于挂起状态。当事件或条件发生时，
+另一个线程可以通过信号来唤醒挂起的线程。一个条件变量总是和一个互斥量相关联。</p>
+
+<h4 id="相关函数">相关函数</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="n">pthread_cond_t</span> <span class="c1">// 条件变量的类型
+</span><span class="kt">int</span> <span class="n">pthread_cond_init</span><span class="p">(</span>
+    <span class="n">pthread_cond_t</span><span class="o">*</span>             <span class="n">cond_p</span><span class="p">,</span>     <span class="cm">/* out */</span>
+    <span class="k">const</span> <span class="n">pthread_condattr_t</span><span class="o">*</span>   <span class="n">cond_attr_p</span> <span class="cm">/* in */</span>
+<span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_cond_destroy</span><span class="p">(</span><span class="n">pthread_cond_t</span><span class="o">*</span> <span class="n">cond_p</span>     <span class="cm">/* in/out */</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_cond_signal</span><span class="p">(</span><span class="n">pthread_cond_t</span><span class="o">*</span> <span class="n">cond_var_p</span>  <span class="cm">/* in/out */</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="n">pthread_cond_t</span><span class="o">*</span> <span class="n">cond_var_p</span>   <span class="cm">/* in/out */</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_cond_wait</span><span class="p">(</span>
+    <span class="n">pthread_cond_t</span><span class="o">*</span> <span class="n">cond_var_p</span><span class="p">,</span>     <span class="cm">/* in/out */</span>
+    <span class="n">pthread_mutex_t</span><span class="o">*</span> <span class="n">mutex_p</span>        <span class="cm">/* in/out */</span>
+<span class="p">);</span>
+</code></pre>
+</div>
+
+<h4 id="条件变量实现路障">条件变量实现路障</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="kt">int</span> <span class="n">counter</span><span class="p">;</span>
+<span class="n">pthread_mutex_t</span> <span class="n">mutex</span><span class="p">;</span>
+<span class="n">pthread_cond_t</span> <span class="n">cond_var</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="kt">void</span><span class="o">*</span> <span class="n">Thread_work</span><span class="p">(...)</span> <span class="p">{</span>
+    <span class="p">...</span>
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+    <span class="n">counter</span><span class="o">++</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">counter</span> <span class="o">==</span> <span class="n">thread_count</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cond_var</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cond_var</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mutex</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>注意：上面else语句使用while循环的原因是因为有其他事件将挂起的线程解锁。</p>
+
+<h2 id="pthread自带的屏障">pthread自带的屏障</h2>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="kt">int</span> <span class="n">pthread_barrier_init</span><span class="p">(</span>
+    <span class="n">pthread_barrier_t</span><span class="o">*</span> <span class="n">barrier</span><span class="p">,</span>         <span class="cm">/* out */</span>
+    <span class="k">const</span> <span class="n">pthread_barrierattr_t</span><span class="o">*</span> <span class="n">attr</span><span class="p">,</span>  <span class="cm">/* in */</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">count</span>  <span class="cm">/* in */</span>
+<span class="p">);</span>
+<span class="kt">int</span> <span class="n">pthread_barrier_destroy</span><span class="p">(</span>
+    <span class="n">pthread_barrier_t</span><span class="o">*</span> <span class="n">barrier</span>
+<span class="p">);</span>
+
+<span class="kt">int</span> <span class="n">pthread_barrier_wait</span><span class="p">(</span>
+    <span class="n">pthread_barrier_t</span><span class="o">*</span> <span class="n">barrier</span>
+<span class="p">);</span>
+</code></pre>
+</div>
+
+<p>pthread_barrier_wait函数给其中一个线程返回<code class="highlighter-rouge">PTHREAD_BARRIER_SERIAL_THREAD</code>,其他线程得到
+的返回值是0；这使得一个线程可以作为主线程，它可以工作在其他所有线程已完成的工作结果上；</p>
+
+<h4 id="example">example</h4>
+<div class="language-cpp highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;time.h&gt;
+#include &lt;limits.h&gt;
+#include &lt;sys/time.h&gt;
+</span>
+<span class="cp">#include &lt;pthread.h&gt;
+</span>
+<span class="cp">#define NTHREAD 8
+#define NUMBERS 10000000
+#define NSIZE  NUMBERS / NTHREAD
+</span>
+<span class="kt">long</span> <span class="n">nums</span><span class="p">[</span><span class="n">NUMBERS</span><span class="p">];</span>     <span class="c1">// the array to be sorted
+</span><span class="kt">long</span> <span class="n">snums</span><span class="p">[</span><span class="n">NUMBERS</span><span class="p">];</span>    <span class="c1">// the sorted array
+</span><span class="kt">long</span> <span class="n">numscopy</span><span class="p">[</span><span class="n">NUMBERS</span><span class="p">];</span> <span class="c1">// test single thread time
+</span>
+<span class="n">pthread_barrier_t</span> <span class="n">b</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">compare</span><span class="p">(</span><span class="k">const</span> <span class="kt">void</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span><span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">_a</span> <span class="o">=</span> <span class="o">*</span><span class="p">((</span><span class="kt">long</span><span class="o">*</span><span class="p">)</span><span class="n">a</span><span class="p">);</span>
+    <span class="kt">long</span> <span class="n">_b</span> <span class="o">=</span> <span class="o">*</span><span class="p">((</span><span class="kt">long</span><span class="o">*</span><span class="p">)</span><span class="n">b</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">_a</span> <span class="o">-</span> <span class="n">_b</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="nf">thread_fn</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="kt">long</span><span class="p">)</span><span class="n">args</span><span class="p">;</span>
+    <span class="n">qsort</span><span class="p">(</span><span class="o">&amp;</span><span class="n">nums</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">NSIZE</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">long</span><span class="p">),</span> <span class="n">compare</span><span class="p">);</span>
+    <span class="n">pthread_barrier_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">merge</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">idx</span><span class="p">[</span><span class="n">NTHREAD</span><span class="p">];</span>
+    <span class="kt">long</span> <span class="n">i</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NTHREAD</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="o">*</span><span class="n">NSIZE</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">index</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">cur</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">num</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">NUMBERS</span><span class="p">;</span> <span class="n">index</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="n">LONG_MAX</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NTHREAD</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> 
+            <span class="k">if</span> <span class="p">(</span><span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">NSIZE</span> <span class="o">&amp;&amp;</span> <span class="n">nums</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">&lt;</span> <span class="n">num</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">num</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]];</span>
+                <span class="n">cur</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="n">snums</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">cur</span><span class="p">]];</span>
+        <span class="n">idx</span><span class="p">[</span><span class="n">cur</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="n">srand</span><span class="p">(</span><span class="n">time</span><span class="p">(</span><span class="nb">NULL</span><span class="p">));</span>
+    <span class="k">struct</span> <span class="n">timeval</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="kt">long</span> <span class="n">startusec</span><span class="p">,</span> <span class="n">endusec</span><span class="p">;</span>
+    <span class="n">pthread_t</span> <span class="n">tid</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">i</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NUMBERS</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">rand</span><span class="p">()</span> <span class="o">%</span> <span class="mi">99999</span><span class="p">);</span>
+        <span class="n">numscopy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="n">pthread_barrier_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">NTHREAD</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+
+    <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">start</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NTHREAD</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">thread_fn</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)(</span><span class="n">i</span><span class="o">*</span><span class="n">NSIZE</span><span class="p">));</span>
+    <span class="p">}</span>
+    <span class="n">pthread_barrier_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">);</span>
+    <span class="n">merge</span><span class="p">();</span>
+    <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">end</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="c1">// for (i = 0; i &lt; NUMBERS; i++) {
+</span>    <span class="c1">//     printf("%ld\n", snums[i]);
+</span>    <span class="c1">// }
+</span>    <span class="n">startusec</span> <span class="o">=</span> <span class="n">start</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">*</span> <span class="mi">1000000</span> <span class="o">+</span> <span class="n">start</span><span class="p">.</span><span class="n">tv_usec</span><span class="p">;</span>
+    <span class="n">endusec</span> <span class="o">=</span> <span class="n">end</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">*</span> <span class="mi">1000000</span> <span class="o">+</span> <span class="n">end</span><span class="p">.</span><span class="n">tv_usec</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%d threads sorted took %.4f seconds</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">NTHREAD</span><span class="p">,</span> <span class="p">(</span><span class="n">endusec</span> <span class="o">-</span> <span class="n">startusec</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000000.0</span><span class="p">);</span>
+
+    <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">start</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">qsort</span><span class="p">(</span><span class="n">numscopy</span><span class="p">,</span> <span class="n">NUMBERS</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">long</span><span class="p">),</span> <span class="n">compare</span><span class="p">);</span>
+    <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">end</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">startusec</span> <span class="o">=</span> <span class="n">start</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">*</span> <span class="mi">1000000</span> <span class="o">+</span> <span class="n">start</span><span class="p">.</span><span class="n">tv_usec</span><span class="p">;</span>
+    <span class="n">endusec</span> <span class="o">=</span> <span class="n">end</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">*</span> <span class="mi">1000000</span> <span class="o">+</span> <span class="n">end</span><span class="p">.</span><span class="n">tv_usec</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"single thread sorted took %.4f seconds</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="p">(</span><span class="n">endusec</span> <span class="o">-</span> <span class="n">startusec</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000000.0</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<h2 id="缓存缓存一致性和为共享">缓存、缓存一致性和为共享</h2>
+
+<h4 id="缓存cache">缓存(Cache)</h4>
+
+<p>处理器的执行速度比访问主存中数据的速度快得多，如果处理器每次操作都从主存中读取数据，那么它将花费大
+量的时间等待数据从内存中取出后再到达处理器。为解决这个问题，处理器增加相对快速的内存，称为缓存。</p>
+
+<h4 id="时间和空间局部性原理">时间和空间局部性原理</h4>
+
+<p>如果处理器在时间t访问了内存位置x，那么很可能它在一个接近t的时间访问接近x的内存位置。</p>
+
+<h4 id="缓存行或缓存块">缓存行或缓存块</h4>
+
+<p>如果一个处理器需要访问主存位置x，那么就不只是将x的内容传入（出）主存，而是将一块包含x的内存传入（出）
+主存。这一块内存称为缓存行或缓存块；</p>
+
+<h4 id="缓存一致性问题">缓存一致性问题</h4>
+
+<p>在多核系统中，各个核的Cache存储相同的变量的副本，当一个处理器更新Cache中变量的副本时，其他处理器
+应该知道该变量已更新，即其他处理器中Cache的副本也应该更新。</p>
+
+<h4 id="缓存一致性的解决">缓存一致性的解决</h4>
+
+<p>1.写直达（write-through）Cache中，当cpu向Cache写数据的时，高速缓存会立即写回主存中；</p>
+
+<p>2.写回（write-back）Cache中，数据不是立即更新到主存中，而是将发生数据更新的高速缓存标记为脏(dirty)，当发生缓存行替换时，标记为脏的高速缓存行被写入到主存中；</p>
+
+<h4 id="伪共享false-sharing">伪共享(false sharing)</h4>
+
+<p>因为缓存一致的基本单位是缓存行或缓存块，它通常比一个存储字大，所以这可能会带来负效应：两个线程可能
+正在访问不同的内存单元，当两个单元属于同一缓存行时，缓存一致性硬件会看成这两个线程正在访问同一个内
+存单元。这样，如果一个线程更新了它的内存单元，之后其他的线程试图读它想访问的内存单元（与前面更新的
+内存单元同在一个缓存行），就不得不从主存中获取值。就是说，缓存一致性硬件强迫多个线程看起来好像是共
+享同一个内存单元。这称为伪共享，它会严重降低共享内存程序的性能。</p>
+
+<h2 id="线程安全性">线程安全性</h2>
+
+<h4 id="什么是线程的安全性">什么是线程的安全性？</h4>
+
+<p>某些C语言函数通过声明static变量，从而在两次调用之间存储数据。当多个线程调用该函数时，可能引起错误，
+因为线程之间共享静态存储，所以一个线程能够覆盖另一个线程的数据。这样的函数不是线程安全的。</p>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=C++ pthread库及缓存 - /posts/cplusplus-thread%E5%BA%93 ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=/posts/cplusplus-thread%E5%BA%93', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=/posts/cplusplus-thread%E5%BA%93', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    Chalk is a high quality, completely customizable, performant and 100% free
+    blog template for Jekyll built by
+    <a href="/about" title="About me">Nielsen Ramon</a>. Download it <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">here</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

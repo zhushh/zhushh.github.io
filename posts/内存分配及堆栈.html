@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Rick | 程序结构的堆栈</title>
+  <meta name="description" content="对程序的堆栈进行比较说明">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="程序结构的堆栈">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/posts/%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%8F%8A%E5%A0%86%E6%A0%88">
+  <meta property="og:description" content="对程序的堆栈进行比较说明">
+  <meta property="og:site_name" content="Rick">
+  <meta property="og:image" content="/assets/documentation/sample-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="/posts/%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%8F%8A%E5%A0%86%E6%A0%88">
+  <meta name="twitter:title" content="程序结构的堆栈">
+  <meta name="twitter:description" content="对程序的堆栈进行比较说明">
+  <meta name="twitter:image" content="/assets/documentation/sample-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="/feed.xml" type="application/rss+xml" rel="alternate" title="Rick Last 10 blog posts" />
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="Rick">Rick</a>
+  <ul class="header-links">
+    
+    
+    
+      <li>
+        <a href="https://github.com/zhushh" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:838044048@qq.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" target="_blank" title="RSS">
+          <span class="icon icon-social-rss"></span>
+        </a>
+      </li>
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>程序结构的堆栈</h1>
+            <p>对程序的堆栈进行比较说明</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                September 12, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  1 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/C++">C++</a>
+                
+                  <a href="/tag/堆">堆</a>
+                
+                  <a href="/tag/栈">栈</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <h2 id="程序结构">程序结构</h2>
+
+<ul>
+  <li>代码段： 存放编译好的机器码，只读数据</li>
+  <li>数据段： 存放全局变量/静态变量/常量</li>
+  <li>堆： 动态分配内存，一般存储由new,malloc,calloc,realloc语句动态分配的内存数据</li>
+  <li>栈： 编译器自动分配和释放，存储函数参数值，局部变量值等</li>
+</ul>
+
+<h2 id="堆栈比较">堆栈比较</h2>
+<p>1.性能上</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>栈： 存在于RAM中，是动态的，
+堆： 存在于RAM中，是一个通用内存池，所有对象存储在堆中
+</code></pre>
+</div>
+
+<p>2.申请方式</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>栈： 由系统分配并释放，不用担心内存泄露问题
+堆： 需要程序员自己调用分配和手动释放，易造成内存泄露
+</code></pre>
+</div>
+
+<p>3.申请后系统响应</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>栈： 只要栈的剩余空间大于所申请的空间，系统将为程序提供内存，否则报异常提示栈溢出
+堆： 首先应当知道操作系统有一个记录空闲内存的指针链表，当系统收到程序的申请时，会遍历该链表，寻
+找第一块空间大于申请空间的堆节点，然后该节点从空闲链表中删除，并把该节点的空间分配给程序；另外
+，对于大多数系统，会在这块内存空间的首地址记录本次分配的大小，这样，代码中的delete语句才能正确
+的释放内存空间。另外，由于找到的堆节点大小不一定刚好等于申请的大小，系统回自动的将多余的部分重
+新放入空闲链表中
+</code></pre>
+</div>
+
+<p>4.申请大小限制</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>栈： 栈是向低地址扩展的连续的内存区域，它的栈顶指针和最大容量是系统规定好的，申请的空间有限制
+堆： 堆是向高低至扩展的不连续的内存区域，大小受限于计算机系统中有效的虚拟内存，所以堆相比于栈来
+说更灵活，可以申请的空间也比较大
+</code></pre>
+</div>
+
+<p>5.申请效率的比较</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>栈： 栈是系统自动分配，一般速度比较快，程序员无法控制
+堆： 由new分配，一般速度比较慢，而且容易产生内存碎片，但使用起来方便
+</code></pre>
+</div>
+
+<p>6.存储的内容</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>栈： 函数调用时，第一个进栈的是主函数中后一条指令（函数调用语句的下一条可执行语句）的地址，然后
+是各个参数，在大多数编译器中，参数是从右往左入栈，然后是函数中的局部变量（注意静态变量不入栈）
+堆： 一般是在堆的头部用一个字节存放堆的大小，内容由程序员自己安排
+</code></pre>
+</div>
+
+<p>7.存取效率的比较</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>char s1[] = "aaaaaa";
+char *s2  = "bbbbbb";
+"aaaaaa"是在运行时候赋值，"bbbbbb"是在编译的时候就确定的；
+但是，在栈上存储的数组比指针所指向的字符串（例如堆中）更快
+</code></pre>
+</div>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=程序结构的堆栈 - /posts/%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%8F%8A%E5%A0%86%E6%A0%88 ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=/posts/%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%8F%8A%E5%A0%86%E6%A0%88', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=/posts/%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%8F%8A%E5%A0%86%E6%A0%88', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    Chalk is a high quality, completely customizable, performant and 100% free
+    blog template for Jekyll built by
+    <a href="/about" title="About me">Nielsen Ramon</a>. Download it <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">here</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

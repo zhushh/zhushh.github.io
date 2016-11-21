@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Rick | C++的建立方式、new和operator new方法</title>
+  <meta name="description" content="深入理解C++类的创建过程，了解new操作和operator new方法">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="C++的建立方式、new和operator new方法">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/posts/c-%E7%B1%BB%E7%9A%84%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B">
+  <meta property="og:description" content="深入理解C++类的创建过程，了解new操作和operator new方法">
+  <meta property="og:site_name" content="Rick">
+  <meta property="og:image" content="/assets/documentation/sample-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="/posts/c-%E7%B1%BB%E7%9A%84%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B">
+  <meta name="twitter:title" content="C++的建立方式、new和operator new方法">
+  <meta name="twitter:description" content="深入理解C++类的创建过程，了解new操作和operator new方法">
+  <meta name="twitter:image" content="/assets/documentation/sample-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="/feed.xml" type="application/rss+xml" rel="alternate" title="Rick Last 10 blog posts" />
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="Rick">Rick</a>
+  <ul class="header-links">
+    
+    
+    
+      <li>
+        <a href="https://github.com/zhushh" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:838044048@qq.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" target="_blank" title="RSS">
+          <span class="icon icon-social-rss"></span>
+        </a>
+      </li>
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>C++的建立方式、new和operator new方法</h1>
+            <p>深入理解C++类的创建过程，了解new操作和operator new方法</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                September 11, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  1 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/C++">C++</a>
+                
+                  <a href="/tag/new">new</a>
+                
+                  <a href="/tag/operator new">operator new</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <h2 id="类的建立方式">类的建立方式</h2>
+<h3 id="静态建立">静态建立</h3>
+
+<p>静态建立一个对象是由编译器为对象在栈空间中分配内存，是通过直接移动栈顶指针，挪出适当的空间，然后在这片内存空间上调用构造函数形成一个栈对象；使用这种方法，直接调用类的构造函数。例如下面例子：</p>
+<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">A</span><span class="p">()</span> <span class="p">{...}</span>
+<span class="p">};</span>
+
+<span class="n">A</span> <span class="n">a</span><span class="p">;</span>
+</code></pre>
+</div>
+
+<h3 id="动态建立">动态建立</h3>
+
+<p>动态建立类的对象，是使用new运算符将对象建立在堆空间中，这个过程分两步，第一步是执行operator new()函数，在堆空间中搜索合适的内存并进行分配；第二步是调用构造函数构造对象，初始化这片内存空间；这种方法，间接调用类的构造函数。</p>
+<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">A</span><span class="p">()</span> <span class="p">{...}</span>
+<span class="p">};</span>
+
+<span class="n">A</span> <span class="o">*</span><span class="n">ptr</span> <span class="o">=</span> <span class="k">new</span> <span class="n">A</span><span class="p">();</span>
+</code></pre>
+</div>
+
+<h3 id="建立只能在栈上面创建的类">建立只能在栈上面创建的类</h3>
+
+<p>只有使用new运算符的对象才会建立在堆上面，因此，只需要禁用new运算符就可以实现类对象只能建立在栈上。将operator new()设置为私有方法即可。</p>
+<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">A</span><span class="p">()</span> <span class="p">{...}</span>
+    <span class="o">~</span><span class="n">A</span><span class="p">()</span> <span class="p">{...}</span>
+<span class="k">private</span><span class="o">:</span>
+    <span class="kt">void</span><span class="o">*</span> <span class="k">operator</span> <span class="k">new</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">t</span><span class="p">)</span> <span class="p">{}</span>     <span class="c1">// 注意函数的第一个参数和返回值都是固定
+</span>    <span class="kt">void</span> <span class="k">operator</span> <span class="k">delete</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">p</span><span class="p">)</span> <span class="p">{}</span>    <span class="c1">// 重载new就需要重载delete
+</span><span class="p">};</span>
+</code></pre>
+</div>
+
+<h3 id="建立只能在堆上面创建的类">建立只能在堆上面创建的类</h3>
+
+<p>当对象建立在栈上面时，是由编译器分配内存空间的，调用构造函数来构造栈对象。当对象使用完后，编译器会调用析构函数来释放栈对象所占的空间。编译器管理了对象的整个生命周期。如果编译器无法调用类的析构函数，情况会是怎样的呢？比如，类的析构函数是私有的，编译器无法调用析构函数来释放内存。所以，编译器在为类对象分配栈空间时，会先检查类的析构函数的访问性，其实不光是析构函数，只要是非静态的函数，编译器都会进行检查。如果类的析构函数是私有的，则编译器不会在栈空间上为类对象分配内存。这就可以实现对象只能动态创建。</p>
+<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">A</span><span class="p">()</span> <span class="p">{...}</span>
+    <span class="kt">void</span> <span class="n">destroy</span><span class="p">()</span> <span class="p">{</span> <span class="k">delete</span> <span class="k">this</span><span class="p">;</span> <span class="p">}</span> <span class="c1">// 使用完类后必须调用这个方法释放资源
+</span><span class="nl">private:</span>
+    <span class="o">~</span><span class="n">A</span><span class="p">()</span> <span class="p">{...}</span>
+<span class="p">};</span>
+
+<span class="c1">// 下面是个继承版本
+</span><span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="k">static</span> <span class="n">A</span><span class="o">*</span> <span class="n">create</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">new</span> <span class="n">A</span><span class="p">();</span> <span class="p">}</span>
+    <span class="kt">void</span> <span class="n">destroy</span><span class="p">()</span> <span class="p">{</span> <span class="k">delete</span> <span class="k">this</span><span class="p">;</span> <span class="p">}</span>
+<span class="k">protected</span><span class="o">:</span>
+    <span class="n">A</span><span class="p">()</span> <span class="p">{...}</span>
+    <span class="k">virtual</span> <span class="o">~</span><span class="n">A</span><span class="p">()</span> <span class="p">{...}</span>
+<span class="p">};</span>
+</code></pre>
+</div>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=C++的建立方式、new和operator new方法 - /posts/c-%E7%B1%BB%E7%9A%84%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=/posts/c-%E7%B1%BB%E7%9A%84%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=/posts/c-%E7%B1%BB%E7%9A%84%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    Chalk is a high quality, completely customizable, performant and 100% free
+    blog template for Jekyll built by
+    <a href="/about" title="About me">Nielsen Ramon</a>. Download it <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">here</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

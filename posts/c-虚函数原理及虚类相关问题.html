@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Rick | 深入理解C++的虚类和虚函数实现方式</title>
+  <meta name="description" content="理解虚函数实现原理，理解虚类、基类指针以及一些使用注意">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="深入理解C++的虚类和虚函数实现方式">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/posts/c-%E8%99%9A%E5%87%BD%E6%95%B0%E5%8E%9F%E7%90%86%E5%8F%8A%E8%99%9A%E7%B1%BB%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98">
+  <meta property="og:description" content="理解虚函数实现原理，理解虚类、基类指针以及一些使用注意">
+  <meta property="og:site_name" content="Rick">
+  <meta property="og:image" content="/assets/documentation/sample-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="/posts/c-%E8%99%9A%E5%87%BD%E6%95%B0%E5%8E%9F%E7%90%86%E5%8F%8A%E8%99%9A%E7%B1%BB%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98">
+  <meta name="twitter:title" content="深入理解C++的虚类和虚函数实现方式">
+  <meta name="twitter:description" content="理解虚函数实现原理，理解虚类、基类指针以及一些使用注意">
+  <meta name="twitter:image" content="/assets/documentation/sample-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="/feed.xml" type="application/rss+xml" rel="alternate" title="Rick Last 10 blog posts" />
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="Rick">Rick</a>
+  <ul class="header-links">
+    
+    
+    
+      <li>
+        <a href="https://github.com/zhushh" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:838044048@qq.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" target="_blank" title="RSS">
+          <span class="icon icon-social-rss"></span>
+        </a>
+      </li>
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>深入理解C++的虚类和虚函数实现方式</h1>
+            <p>理解虚函数实现原理，理解虚类、基类指针以及一些使用注意</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                November 16, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  3 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/C++">C++</a>
+                
+                  <a href="/tag/virtual">virtual</a>
+                
+                  <a href="/tag/虚函数">虚函数</a>
+                
+                  <a href="/tag/虚基类">虚基类</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <h3 id="什么是虚函数">什么是虚函数？</h3>
+
+<p>虚函数又称虚方法（因为虚函数只能在类中声明），通过关键字virtual来声明的函数；例如：</p>
+<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">print</span><span class="p">();</span>   <span class="c1">// virtual function
+</span>    <span class="kt">void</span> <span class="n">print</span><span class="p">(</span><span class="kt">int</span><span class="p">);</span>        <span class="c1">// non-virtual function
+</span><span class="p">};</span>
+</code></pre>
+</div>
+<p>虚函数存放在虚函数表vtbl中，基类中声明为虚函数的成员方法，在派生类中也仍为虚函数（无论在派生类中有没
+有virtual关键字修饰）；</p>
+
+<h3 id="认识重载overloading重定义overriding和隐藏">认识重载(overloading)、重定义(overriding)和隐藏</h3>
+
+<p>重载(overloading)：同一个类中，函数名相同，但参数列表不同</p>
+
+<p>重定义(overriding)：父子类中，函数名相同，参数列表相同，且有virtual修饰</p>
+
+<p>隐藏：父子类中，函数名相同，参数列表相同，但没有virtual修饰；或函数名相同，参数列表不同，无论有无virtual修饰；</p>
+
+<h3 id="虚函数是怎么实现的">虚函数是怎么实现的？</h3>
+
+<h4 id="基类的虚函数表创建">基类的虚函数表创建</h4>
+
+<p>首先是在基类声明中找到所有的虚函数，按照其声明顺序编码0,1,2…,然后按照此声明顺序为基类创建一个虚函数表，
+其内容就是存放指向这些虚函数的函数指针，按照函数的声明顺序将虚函数的地址填入虚函数表中；</p>
+
+<h4 id="派生类的虚函数表创建">派生类的虚函数表创建</h4>
+
+<p>首先将基类的虚函数表复制到派生类的虚函数表中；若在派生类中重写了基类的虚函数show，则将派生类的虚函数表中
+存放show的函数地址（未重写前存放的是基类的show虚函数的函数地址）更新为重写后函数的函数指针；若派生类增加
+了一些虚函数的声明，则将虚函数的地址加到该类函数虚函数表的后面；</p>
+
+<h3 id="为什么析构函数最好声明为virtual">为什么析构函数最好声明为virtual？</h3>
+
+<p><a href="http://stackoverflow.com/questions/461203/when-to-use-virtual-destructors">When to use virtual destructors?</a></p>
+
+<p>如果通过基类指针删除一个派生类的实例的时候，虚的析构函数就非常有用，比如下面：</p>
+<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Base</span> <span class="p">{</span>
+    <span class="c1">// some virtual method
+</span><span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Derived</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Base</span> <span class="p">{</span>
+    <span class="o">~</span><span class="n">Derived</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// do some important cleanup
+</span>    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre>
+</div>
+<p>这里的基类没有声明为虚方法，假设你再有下面代码：</p>
+<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="n">Base</span> <span class="o">*</span><span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Derived</span><span class="p">();</span>
+<span class="c1">// use b
+</span><span class="k">delete</span> <span class="n">b</span><span class="p">;</span>   <span class="c1">// Here's the problem
+</span></code></pre>
+</div>
+<p>因为基类Base的析构函数不是虚方法，而b却又指向Derived的实例，所以delete基类指针b是一个未定义的行为；
+这会容易导致Derived的动态分配的内存没有被释放，形成内存泄露。如果基类Base的析构函数是虚方法，那么删除
+Base的指针b时，会动态调用指针所指向的实例的析构函数，也就是Derived的析构函数，就不会有内存泄漏。</p>
+
+<h3 id="为什么构造函数不可以声明为虚的virtual">为什么构造函数不可以声明为虚的（virtual）？</h3>
+
+<p>先了解一下函数方法的执行顺序，假设pBase为基类Base指针，那么调用<code class="highlighter-rouge">pBase-&gt;show()；</code>的顺序如下：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>1.判断Base类中show方法是否为虚函数;
+2.若show方法不是虚函数，那么找到pBase所指向的对象的所属类Base，执行Base::show();
+3.若show方法是虚函数，访问pBase所指向的虚函数表指针得到pBase所指向的对象所在类的虚函数表；
+4.查找Base中show()在声明的位序x，到步骤3中得到的虚函数表中找到位序x，从而得到要执行的show函数地址；
+5.根据函数地址和Base中声明的show的函数类型（形参和返回值）访问地址所指向的函数；
+</code></pre>
+</div>
+<p>如果构造函数声明为虚方法，那么在调用这个构造函数时无法找到对象所在的类（第3步）的虚函数表；
+因此，构造函数不能为虚函数；</p>
+
+<h3 id="虚类的构造函数和析构函数的执行顺序是怎样">虚类的构造函数和析构函数的执行顺序是怎样？</h3>
+
+<p>举个例子：</p>
+<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Test</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">Test</span><span class="p">()</span> <span class="p">{</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Test Constructed"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;}</span>
+    <span class="o">~</span><span class="n">Test</span><span class="p">()</span> <span class="p">{</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Test Destructed"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;}</span>
+<span class="p">};</span>
+<span class="k">class</span> <span class="nc">Base</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">Base</span><span class="p">()</span> <span class="p">{</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Base Constructed"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;}</span>
+    <span class="k">virtual</span> <span class="o">~</span><span class="n">Base</span><span class="p">()</span> <span class="p">{</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Base Destructed"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;}</span>
+<span class="p">};</span>
+<span class="k">class</span> <span class="nc">Derived</span><span class="o">:</span> <span class="k">public</span> <span class="n">Base</span>
+<span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">Derived</span><span class="p">()</span> <span class="p">{</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Derived Constructed"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;}</span>
+    <span class="k">virtual</span> <span class="o">~</span><span class="n">Derived</span><span class="p">()</span> <span class="p">{</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Derived Destructed"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;}</span>
+<span class="k">private</span><span class="o">:</span>
+    <span class="n">Test</span> <span class="n">t</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="n">Base</span> <span class="o">*</span><span class="n">bptr</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Derived</span><span class="p">();</span>
+    <span class="k">delete</span> <span class="n">bptr</span><span class="p">;</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>上面程序输出结果：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>Base Constructed
+Test Constructed
+Derived Constructed
+Derived Destructed
+Test Destructed
+Base Destructed
+</code></pre>
+</div>
+
+<p>原因分析：</p>
+
+<p>指向派生类的基类指针构造函数和析构函数的执行顺序如下：</p>
+
+<p>基类构造函数-&gt;成员变量的构造函数-&gt;自身构造函数</p>
+
+<p>自身析构函数-&gt;成员变量析构函数-&gt;基类析构函数</p>
+
+<h3 id="虚函数表是否可以修改">虚函数表是否可以修改？</h3>
+
+<p>虚函数表可以修改，看下面例子：</p>
+<div class="language-c++ highlighter-rouge"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">animal</span>
+<span class="p">{</span>
+<span class="k">protected</span><span class="o">:</span>
+    <span class="kt">int</span> <span class="n">age</span><span class="p">;</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">print_age</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">dog</span> <span class="o">:</span> <span class="k">public</span> <span class="n">animal</span>
+<span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">dog</span><span class="p">()</span> <span class="p">{</span><span class="k">this</span> <span class="o">-&gt;</span> <span class="n">age</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;}</span>
+    <span class="o">~</span><span class="n">dog</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">print_age</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">"Wang, my age = "</span><span class="o">&lt;&lt;</span><span class="k">this</span> <span class="o">-&gt;</span> <span class="n">age</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">cat</span><span class="o">:</span> <span class="k">public</span> <span class="n">animal</span>
+<span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="n">cat</span><span class="p">()</span> <span class="p">{</span><span class="k">this</span> <span class="o">-&gt;</span> <span class="n">age</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;};</span>
+    <span class="o">~</span><span class="n">cat</span><span class="p">()</span> <span class="p">{</span> <span class="p">}</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">print_age</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">"Miao, my age = "</span><span class="o">&lt;&lt;</span><span class="k">this</span> <span class="o">-&gt;</span> <span class="n">age</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">cat</span> <span class="n">kitty</span><span class="p">;</span>
+    <span class="n">dog</span> <span class="n">jd</span><span class="p">;</span>
+    <span class="n">animal</span> <span class="o">*</span> <span class="n">pa</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">kitty</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="o">*</span> <span class="n">q</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">jd</span><span class="p">);</span>
+    <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">pa</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">kitty</span><span class="p">;</span>
+    <span class="n">pa</span> <span class="o">-&gt;</span> <span class="n">print_age</span><span class="p">();</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>输出结果：
+Wang, my age = 1</p>
+
+<p>原因分析要理解虚函数表以及类的存储结构：</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>int * p = (int *)(&amp;kitty)   // p指向kitty
+int * q = (int *)(&amp;jd)      // q指向jd
+p[0] = q[0]   // 把kitty的指向cat::print_age的指针值，修改成指向了dog::print_age
+pa = &amp;kitty   // pa指向kitty
+pa-&gt;print_age()  // 调用的是刚刚被修改过的函数指针，也就是dog::print_age函数，但是
+// 在this-&gt;age的这个语句的this是kitty,age也就自然是kitty的1
+</code></pre>
+</div>
+
+<h3 id="参考链接">参考链接</h3>
+
+<p><a href="http://blog.csdn.net/generalharry/article/details/11866997">http://blog.csdn.net/generalharry/article/details/11866997</a></p>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=深入理解C++的虚类和虚函数实现方式 - /posts/c-%E8%99%9A%E5%87%BD%E6%95%B0%E5%8E%9F%E7%90%86%E5%8F%8A%E8%99%9A%E7%B1%BB%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98 ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=/posts/c-%E8%99%9A%E5%87%BD%E6%95%B0%E5%8E%9F%E7%90%86%E5%8F%8A%E8%99%9A%E7%B1%BB%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=/posts/c-%E8%99%9A%E5%87%BD%E6%95%B0%E5%8E%9F%E7%90%86%E5%8F%8A%E8%99%9A%E7%B1%BB%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    Chalk is a high quality, completely customizable, performant and 100% free
+    blog template for Jekyll built by
+    <a href="/about" title="About me">Nielsen Ramon</a>. Download it <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">here</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>
